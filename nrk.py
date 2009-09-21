@@ -1,10 +1,21 @@
 # -*- coding: utf-8 -*-
 
-__author__ = "Erlend Klakegg Bergheim <erlend@averlend.com>"
-__version__ = "0.1a2"
+# This file is part of NrkFS.
+#
+# NrkFS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# NrkFS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-# Created by Erlend Klakegg Bergheim
-# http://blog.averlend.com/
+__version__ = "0.1a2"
 
 from BeautifulSoup import BeautifulSoup 
 import urllib2, time, re
@@ -78,10 +89,6 @@ def getRoot():
 	root.addChildren(getThemes())
 	root.updated = time.time() * 2
 
-	live = Node("Direkte", "/klipp/live")
-	live.cut = "mms://straumv.nrk.no/nrk_tv_webvid10_m"
-	root.children["Direkte"] = live
-	
 	return root
 
 def request(url, split = None):

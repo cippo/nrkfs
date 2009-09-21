@@ -1,23 +1,31 @@
 #!/usr/bin/env python
 
-__author__ = "Erlend Klakegg Bergheim <erlend@averlend.com>"
-__version__ = "0.1a1"
+# This file is part of NrkFS.
+#
+# NrkFS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# NrkFS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-# Created by Erlend Klakegg Bergheim
-# http://blog.averlend.com/
+__version__ = "0.1a2"
 
-import stat, errno, time
-
-import fuse
-from fuse import Fuse
-
+import fuse, stat, errno, time, nrk
 fuse.fuse_python_api = (0, 2)
 
-import nrk
-
-root = nrk.getRoot()
+root = None
 
 def getNode(path):
+	global root
+	if not root:
+		root = nrk.getRoot()
 	node = root
 	for p in path.split("/")[1:]:
 		if p != "" and node:
@@ -37,7 +45,7 @@ class Stat(fuse.Stat):
         self.st_mtime = time.time()
         self.st_ctime = time.time()
 
-class NrkFS(Fuse):
+class NrkFS(fuse.Fuse):
 
 	def getattr(self, path):
 		st = Stat()
@@ -79,8 +87,7 @@ class NrkFS(Fuse):
     <title>%s</title>
     <ref href="%s" />
   </entry>
-</asx>
-		""" % (node.title, str(node.getCut()))
+</asx>""" % (node.title, str(node.getCut()))
 
 		playlist += " " * (1000 - len(playlist))
 
@@ -96,7 +103,7 @@ class NrkFS(Fuse):
 
 if __name__ == '__main__':
     server = NrkFS(version="%prog " + fuse.__version__,
-		 usage=Fuse.fusage,
+		 usage=fuse.Fuse.fusage,
 		 dash_s_do='setsingle')
 
     server.parse(errex=1)
