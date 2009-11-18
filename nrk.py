@@ -20,7 +20,7 @@ __version__ = "0.1a2"
 from BeautifulSoup import BeautifulSoup 
 import urllib2, time, re
 
-switchDate = re.compile("(.*)( )([0-9]{2})\.([0-9]{2})\.([0-9]{2})(.*)")
+switchDate = re.compile("(.*)( )([0-9]{2})\.([0-9]{2})\.[0-9]{0,2}([0-9]{2})(.*)")
 
 class Node():
 	def __init__(self, title, href):
@@ -130,6 +130,7 @@ def getProject(url):
 def getCategory(url):
 	ret = []
 	ul = request(url, "ctl00_ucContent_ContentHeading")
+	ul = ul.findAll("ul", {"class": "open"})[-1]
 	for a in ul.findAll("li"):
 		try:
 			print a["id"][0:5]
