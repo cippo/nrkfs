@@ -10,8 +10,9 @@ Homepage: http://blog.averlend.com/2009/05/23/nrk-som-filsystem/
 Package: nrkfs
 Architecture: all
 Depends: python-fuse,
+         python-beautifulsoup,
          python,
-         ${python:Depends}
+         ${python:Depends},
          ${misc:Depends}
 Description: Get access to NRK as a filesystem
  Mount the videos from the Norwegian broadcaster NRK as a file system.
