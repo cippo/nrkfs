@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # This file is part of NrkFS.
 #
@@ -15,10 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.1a2"
+__version__ = "0.2"
 
-import fuse, stat, errno, time, nrk
-fuse.fuse_python_api = (0, 2)
+try:
+	import fuse
+	fuse.fuse_python_api = (0, 2)
+except ImportError:
+	print "Library 'fuse' not found."
+	exit()
+
+try:
+	import nrk
+except ImportError:
+	print "Library 'not' not found."
+	exit()
+
+import fuse, stat, errno, time
 
 root = None
 

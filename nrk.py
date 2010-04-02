@@ -15,9 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.1a3"
+__version__ = "0.2"
 
-from BeautifulSoup import BeautifulSoup 
+try:
+	from BeautifulSoups import BeautifulSoup 
+except ImportError:
+	print "Library 'BeauitifulSoup' not found."
+	exit()
+
 import urllib2, time, re
 
 switchDate = re.compile("(.*)( )([0-9]{2})\.([0-9]{2})\.[0-9]{0,2}([0-9]{2})(.*)")
@@ -151,4 +156,4 @@ def getCut(url):
 		if p["href"][0:3] == "mms":
 			return p["href"]
 
-// print getRoot().getChild("Nyheter").getChild("Dagsrevyen").getChild("Mars 10").getChild("10-03-09 Dagsrevyen.asx").getCut()
+# print getRoot().getChild("Nyheter").getChild("Dagsrevyen").getChild("Mars 10").getChild("10-03-09 Dagsrevyen.asx").getCut()
