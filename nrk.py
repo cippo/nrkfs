@@ -105,20 +105,23 @@ def request(url, split = None):
 	return soup
 
 def getThemes():
-	ul = request("http://www1.nrk.no/nett-tv/").findAll(id="ctl00_ucTop_themes")[0]
-	return [(b["title"].encode("utf8"), b["href"]) for b in ul.findAll("a")]
+	ul = request("http://www1.nrk.no/nett-tv/").findAll(id="categories")[0]
+	return [(b["title"].encode("utf8").split("'")[1], b["href"]) for b in ul.findAll("a")]
 
 def getTheme(url):
 	ret = []
-	ul = request(url, "ctl00_ucLiveContent_ContentHeading")
-	for a in ul.findAll(**{"class": "intro-element intro-element-small"}):
-		el = a.find("h2").find("a")
-		ret.append((el["title"].split(" - ")[0].encode("utf8"), el["href"]))
+	ul = request(url, "nettv-category")
+	for a in ul.findAll("li"):
+		if a.find("div"):
+			a = a.find("a")
+		# el = a.find("h2").find("a")
+			ret.append((a["title"].split(" - ")[0].encode("utf8"), a["href"]))
 	return ret
 
 def getProject(url):
 	ret = []
-	ul = request(url, "ctl00_ucContent_ContentHeading")
+	ul = request(url)
+	ul = ul.find(id= "ctl00_ucContent_menu")
 	for a in ul.findAll("li"):
 		try:
 			el = a.find("a")
@@ -129,19 +132,15 @@ def getProject(url):
 
 def getCategory(url):
 	ret = []
-	ul = request(url, "ctl00_ucContent_ContentHeading")
-	ul = ul.findAll("ul", {"class": "open"})[-1]
-	for a in ul.findAll("li"):
-		try:
-			print a["id"][0:5]
-			if a["id"][0:5] == "child":
-				el = a.find("a")
-				ret.append((el["title"].encode("utf8"), el["href"]))
-		except:
-			pass
+	ul = request(url)
+	# ul = ul.findAll("ul", {"class": "icon-video-black"})[-1]
+	for a in ul.findAll("a", {"class": "icon-video-black"}):
+		# Should use a.string, not a[title]
+		ret.append((a["title"].encode("utf8"), a["href"]))
 	return ret
 
 def getCut(url):
+	print url
 	ul = request(url)
 	url = None
 	for p in ul.findAll("param"):
@@ -151,3 +150,5 @@ def getCut(url):
 	for p in request(url).findAll("ref"):
 		if p["href"][0:3] == "mms":
 			return p["href"]
+
+// print getRoot().getChild("Nyheter").getChild("Dagsrevyen").getChild("Mars 10").getChild("10-03-09 Dagsrevyen.asx").getCut()
