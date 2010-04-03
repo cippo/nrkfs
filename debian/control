@@ -5,7 +5,7 @@ Maintainer: Sveinung Kvilhaugsvik <sveinung84@users.sourceforge.net>
 Uploaders: Erlend Klakegg Bergheim <erlend@averlend.com>
 Build-Depends: debhelper (>= 5), cdbs, python-support (>= 0.4.49), python
 Standards-Version: 3.8.3
-Homepage: http://blog.averlend.com/2009/05/23/nrk-som-filsystem/
+Homepage: http://github.com/klakegg/nrkfs/
 
 Package: nrkfs
 Architecture: all
