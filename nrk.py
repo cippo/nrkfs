@@ -18,7 +18,7 @@
 __version__ = "0.2"
 
 try:
-	from BeautifulSoups import BeautifulSoup 
+	from BeautifulSoup import BeautifulSoup 
 except ImportError:
 	print "Library 'BeauitifulSoup' not found."
 	exit()
