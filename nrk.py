@@ -138,8 +138,8 @@ def getProject(url):
 def getCategory(url):
 	ret = []
 	ul = request(url)
-	# ul = ul.findAll("ul", {"class": "icon-video-black"})[-1]
-	for a in ul.findAll("a", {"class": "icon-video-black"}):
+	ul = ul.find("ul", {"id": "folder" + url.split("/")[-1]})
+	for a in ul.findAll("a"):
 		# Should use a.string, not a[title]
 		ret.append((a["title"].encode("utf8"), a["href"]))
 	return ret
@@ -155,5 +155,3 @@ def getCut(url):
 	for p in request(url).findAll("ref"):
 		if p["href"][0:3] == "mms":
 			return p["href"]
-
-# print getRoot().getChild("Nyheter").getChild("Dagsrevyen").getChild("Mars 10").getChild("10-03-09 Dagsrevyen.asx").getCut()
