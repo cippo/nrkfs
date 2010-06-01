@@ -34,10 +34,9 @@ except ImportError:
 import fuse, stat, errno, time, os, sys, getopt
 
 root = None
-
 config = {}
-
 logfile = None
+
 def log(*txt):
 	global logfile
 	if logfile != None:
@@ -58,12 +57,13 @@ def getNode(path):
 
 class Stat(fuse.Stat):
     def __init__(self):
+
         self.st_mode = 0
         self.st_ino = 0
         self.st_dev = 0
         self.st_nlink = 0
-        self.st_uid = Stat.stat[4]
-        self.st_gid = Stat.stat[5]
+        self.st_uid = os.getuid()
+        self.st_gid = os.getgid()
         self.st_size = 4096
 
 class NrkFS(fuse.Fuse):
@@ -140,29 +140,20 @@ class NrkFS(fuse.Fuse):
 			buf = ''
 		return buf
 
-if __name__ == '__main__':
-	Stat.stat = os.stat(sys.argv[-1])
+def main():
+	#optlist, sys.argv = getopt.getopt(sys.argv, 'b:c:l:o:')
 
+	#for ok, ov in optlist:
+	#	if ok == "-o":
+	#		sys.argv.append(ok + ov)
+	#	elif ok[1:] in ["b", "c"]:
+	#		nrk.config[ok[1:]] = int(ov)
+	#	else:
+	#		config[ok[1:]] = ov
 
-	f = [sys.argv[0]]
-	optlist, sys.argv = getopt.getopt(sys.argv[1:], 'b:c:l:o:')
-
-	oargs = []
-	for ok, ov in optlist:
-		if ok == "-o":
-			oargs.append(ok)
-			oargs.append(ov)
-		elif ok[1:] in ["b", "c"]:
-			nrk.config[ok[1:]] = int(ov)
-		else:
-			config[ok[1:]] = ov
-
-	sys.argv = f + oargs + sys.argv
-
-	if config.has_key("l"):
-		logfile = open(config["l"], "w")
-		log("Starting...")
-
+	#if config.has_key("l"):
+	#	logfile = open(config["l"], "w")
+	#	log("Starting...")
 
 	server = NrkFS(version="%prog " + fuse.__version__,
 			usage=fuse.Fuse.fusage,
@@ -174,3 +165,6 @@ if __name__ == '__main__':
 	except Exception, e:
 		print str(e)
 		log(e)
+
+if __name__ == '__main__':
+	main()
