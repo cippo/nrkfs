@@ -31,7 +31,7 @@ except ImportError:
 	print "Library 'not' not found."
 	exit()
 
-import fuse, stat, errno, time
+import fuse, stat, errno, time, os, sys
 
 root = None
 
@@ -51,8 +51,8 @@ class Stat(fuse.Stat):
         self.st_ino = 0
         self.st_dev = 0
         self.st_nlink = 0
-        self.st_uid = 0
-        self.st_gid = 0
+        self.st_uid = Stat.stat[4]
+        self.st_gid = Stat.stat[5]
         self.st_size = 0
         self.st_atime = time.time()
         self.st_mtime = time.time()
@@ -115,9 +115,11 @@ class NrkFS(fuse.Fuse):
 		return buf
 
 if __name__ == '__main__':
+    Stat.stat = os.stat(sys.argv[-1])
+
     server = NrkFS(version="%prog " + fuse.__version__,
 		 usage=fuse.Fuse.fusage,
-		 dash_s_do='setsingle')
+		 dash_s_do='whine')
 
     server.parse(errex=1)
     server.main()
