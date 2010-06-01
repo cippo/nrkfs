@@ -53,7 +53,7 @@ class Stat(fuse.Stat):
         self.st_nlink = 0
         self.st_uid = Stat.stat[4]
         self.st_gid = Stat.stat[5]
-        self.st_size = 0
+        self.st_size = 4096
         self.st_atime = time.time()
         self.st_mtime = time.time()
         self.st_ctime = time.time()
@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     server = NrkFS(version="%prog " + fuse.__version__,
 		 usage=fuse.Fuse.fusage,
-		 dash_s_do='whine')
+		 dash_s_do='setsingle')
 
     server.parse(errex=1)
     server.main()
