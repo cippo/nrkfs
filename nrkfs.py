@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 try:
 	import fuse
@@ -28,21 +28,32 @@ except ImportError:
 try:
 	import nrk
 except ImportError:
-	print "Library 'not' not found."
+	print "Library 'nrk' not found."
 	exit()
 
-import fuse, stat, errno, time, os, sys
+import fuse, stat, errno, time, os, sys, getopt
 
 root = None
+
+config = {}
+
+logfile = None
+def log(*txt):
+	global logfile
+	if logfile != None:
+		logfile.write(" ".join([str(x) for x in txt]) + "\n")
+		logfile.flush()
 
 def getNode(path):
 	global root
 	if not root:
 		root = nrk.getRoot()
+
 	node = root
 	for p in path.split("/")[1:]:
-		if p != "" and node:
+		if p.strip() != "" and node != None:
 			node = node.getChild(p)
+	
 	return node
 
 class Stat(fuse.Stat):
@@ -54,38 +65,54 @@ class Stat(fuse.Stat):
         self.st_uid = Stat.stat[4]
         self.st_gid = Stat.stat[5]
         self.st_size = 4096
-        self.st_atime = time.time()
-        self.st_mtime = time.time()
-        self.st_ctime = time.time()
 
 class NrkFS(fuse.Fuse):
 
 	def getattr(self, path):
-		st = Stat()
+		log("getattr", path)
+
+		if path in ["/.Trash", "/.Trash-1000"]:
+			log("-", "No such file or directory")
+			return errno.ENOENT
+
 		node = getNode(path)
+
+		if node == None:
+			log("-", "No such file or directory")
+			return -errno.ENOENT
+
+		st = Stat()
+		st.st_atime = int(node.updated)
+		st.st_mtime = int(node.updated)
+		st.st_ctime = int(node.updated)
+
 		if node.isCut():
 			st.st_mode = stat.S_IFREG | 0444
 			st.st_nlink = 1
 			st.st_size = 1000
-		elif node:
+		else:
 			st.st_mode = stat.S_IFDIR | 0555
 			st.st_nlink = 3
-		else:
-			return -errno.ENOENT
 		return st
 
 	def readdir(self, path, offset):
+		log("readdir", path, offset)
+
 		children = getNode(path).getChildren().keys()
 		children.sort()
 		for r in [".", ".."] + children:
 			yield fuse.Direntry(str(r))
 
 	def open(self, path, flags):
+		log("open", path, flags)
+
 		node = getNode(path)
 		if not node.isCut():
 			return -errno.ENOENT
 
 	def read(self, path, size, offset):
+		log("read", path, offset)
+
 		node = getNode(path)
 		if not node.isCut():
 			return -errno.ENOENT
@@ -95,7 +122,6 @@ class NrkFS(fuse.Fuse):
 <asx version="3.0">
   <title>NRK Nett-TV</title>
   <author>NRK - Norsk Rikskringkasting</author>
- 
   <entry>
     <title>%s</title>
     <ref href="%s" />
@@ -115,11 +141,36 @@ class NrkFS(fuse.Fuse):
 		return buf
 
 if __name__ == '__main__':
-    Stat.stat = os.stat(sys.argv[-1])
+	Stat.stat = os.stat(sys.argv[-1])
 
-    server = NrkFS(version="%prog " + fuse.__version__,
-		 usage=fuse.Fuse.fusage,
-		 dash_s_do='setsingle')
 
-    server.parse(errex=1)
-    server.main()
+	f = [sys.argv[0]]
+	optlist, sys.argv = getopt.getopt(sys.argv[1:], 'b:c:l:o:')
+
+	oargs = []
+	for ok, ov in optlist:
+		if ok == "-o":
+			oargs.append(ok)
+			oargs.append(ov)
+		elif ok[1:] in ["b", "c"]:
+			nrk.config[ok[1:]] = int(ov)
+		else:
+			config[ok[1:]] = ov
+
+	sys.argv = f + oargs + sys.argv
+
+	if config.has_key("l"):
+		logfile = open(config["l"], "w")
+		log("Starting...")
+
+
+	server = NrkFS(version="%prog " + fuse.__version__,
+			usage=fuse.Fuse.fusage,
+			dash_s_do='setsingle')
+
+	server.parse(errex=1)
+	try:
+		server.main()
+	except Exception, e:
+		print str(e)
+		log(e)

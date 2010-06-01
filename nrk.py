@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 try:
 	from BeautifulSoup import BeautifulSoup 
@@ -26,6 +26,8 @@ except ImportError:
 import urllib2, time, re
 
 switchDate = re.compile("(.*)( )([0-9]{2})\.([0-9]{2})\.[0-9]{0,2}([0-9]{2})(.*)")
+
+config = dict(b=10000, c=120)
 
 class Node():
 	def __init__(self, title, href):
@@ -51,7 +53,9 @@ class Node():
 				self.children[node.title] = node
 
 	def getChildren(self):
-		if len(self.children) == 0 or self.updated + 120 < time.time():
+		global config
+
+		if len(self.children) == 0 or self.updated + config["c"] < time.time():
 			if self.isTheme():
 				self.addChildren(getTheme(self.href))
 			elif self.isProject():
@@ -92,14 +96,16 @@ class Node():
 def getRoot():
 	root = Node("root", "/")
 	root.addChildren(getThemes())
-	root.updated = time.time() * 2
+	root.updated = time.time()
 
 	return root
 
 def request(url, split = None):
+	global config
+
 	if url[0] == "/":
 		url = "http://www1.nrk.no" + url
-	cookie = """NetTV2.0Speed=NetTV2.0Speed=10530; UseSilverlight=UseSilverlight=0;"""
+	cookie = """NetTV2.0Speed=NetTV2.0Speed=""" + str(config["b"]) + """; UseSilverlight=UseSilverlight=0;"""
 	req = urllib2.Request(url, None, {'Cookie': cookie})
 	res = urllib2.urlopen(req)
 	if split:
@@ -119,7 +125,6 @@ def getTheme(url):
 	for a in ul.findAll("li"):
 		if a.find("div"):
 			a = a.find("a")
-		# el = a.find("h2").find("a")
 			ret.append((a["title"].split(" - ")[0].encode("utf8"), a["href"]))
 	return ret
 
