@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.3"
+__version__ = "0.3.1"
 
 try:
 	from BeautifulSoup import BeautifulSoup 
@@ -131,7 +131,7 @@ def getTheme(url):
 def getProject(url):
 	ret = []
 	ul = request(url)
-	ul = ul.find(id= "ctl00_ucContent_menu")
+	ul = ul.find(id= "ctl00_contentPlaceHolder_UcProjectInfo_menu")
 	for a in ul.findAll("li"):
 		try:
 			el = a.find("a")
