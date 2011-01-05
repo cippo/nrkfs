@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 try:
 	from BeautifulSoup import BeautifulSoup 
@@ -141,13 +141,16 @@ def getProject(url):
 	return ret
 
 def getCategory(url):
-	ret = []
-	ul = request(url)
-	ul = ul.find("ul", {"id": "folder" + url.split("/")[-1]})
-	for a in ul.findAll("a"):
-		# Should use a.string, not a[title]
-		ret.append((a["title"].encode("utf8"), a["href"]))
-	return ret
+	try:
+		ret = []
+		ul = request(url)
+		ul = ul.find("ul", {"id": "folder" + url.split("/")[-1]})
+		for a in ul.findAll("a"):
+			# Should use a.string, not a[title]
+			ret.append((a["title"].encode("utf8"), a["href"]))
+		return ret
+	except:
+		return []
 
 def getCut(url):
 	print url
