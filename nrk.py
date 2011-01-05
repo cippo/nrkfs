@@ -150,7 +150,6 @@ def getCategory(url):
 				ret.append((unicode(a.string).encode("UTF-8"), a["href"]))
 		return ret
 	except Exception, e:
-		print e
 		return []
 
 def getCut(url):
