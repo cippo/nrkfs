@@ -146,10 +146,11 @@ def getCategory(url):
 		ul = request(url)
 		ul = ul.find("ul", {"id": "folder" + url.split("/")[-1]})
 		for a in ul.findAll("a"):
-			# Should use a.string, not a[title]
-			ret.append((a["title"].encode("utf8"), a["href"]))
+			if a.string != "&nbsp;":
+				ret.append((unicode(a.string).encode("UTF-8"), a["href"]))
 		return ret
-	except:
+	except Exception, e:
+		print e
 		return []
 
 def getCut(url):

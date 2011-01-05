@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.3"
+__version__ = "0.3.2"
 
 try:
 	import fuse
@@ -101,7 +101,7 @@ class NrkFS(fuse.Fuse):
 		children = getNode(path).getChildren().keys()
 		children.sort()
 		for r in [".", ".."] + children:
-			yield fuse.Direntry(str(r))
+			yield fuse.Direntry(str(r).replace("/", "-"))
 
 	def open(self, path, flags):
 		log("open", path, flags)
