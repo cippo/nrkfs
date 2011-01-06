@@ -29,7 +29,7 @@ switchDate = re.compile("(.*)( )([0-9]{2})\.([0-9]{2})\.[0-9]{0,2}([0-9]{2})(.*)
 
 config = dict(b=10000, c=120)
 
-class Node():
+class Node:
 	def __init__(self, title, href):
 		self.children = dict()
 		self.title = title
