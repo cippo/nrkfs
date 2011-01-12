@@ -1,1 +1,6 @@
 *.pyc
+build
+debian/files
+debian/nrkfs*
+debian/pycompat
+debian/python-module-stampdir

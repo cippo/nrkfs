@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 try:
 	from BeautifulSoup import BeautifulSoup 
@@ -44,10 +44,9 @@ class Node:
 
 	def addChildren(self, children):
 		self.updated = time.time()
-		self.children = dict()
 		for c in children:
 			node = Node(c[0], c[1])
-			if node.isCut():
+			if node.isCut() or node.isDirectTv():
 				self.children[node.title + ".asx"] = node
 			else:
 				self.children[node.title] = node
@@ -56,12 +55,15 @@ class Node:
 		global config
 
 		if len(self.children) == 0 or self.updated + config["c"] < time.time():
+			self.children = dict()
 			if self.isTheme():
 				self.addChildren(getTheme(self.href))
 			elif self.isProject():
 				self.addChildren(getProject(self.href))
 			elif self.isCategory():
 				self.addChildren(getCategory(self.href))
+			elif self.isDirect():
+				self.addChildren(getDirect())
 
 		return self.children
 	
@@ -71,7 +73,10 @@ class Node:
 			return self.getChildren()[title]
 		else:
 			return None
-			
+
+	def isFile(self):
+		return self.isCut() or self.isDirectTv()
+
 	def isTheme(self):
 		return self.href.count("tema") > 0
 	
@@ -83,12 +88,19 @@ class Node:
 		
 	def isCut(self):
 		return self.href.count("klipp") > 0
+		
+	def isDirect(self):
+		return self.href == "direkte"
+		
+	def isDirectTv(self):
+		return self.href.count("direkte/") > 0
 	
 	def getCut(self):
-		if self.isCut():
-			if not self.cut:
-				self.cut = getCut(self.href)
-			return self.cut
+		if self.isFile():
+			if self.isCut() or self.isDirectTv():
+				if not self.cut:
+					self.cut = getCut(self.href)
+				return self.cut
 	
 	def __repr__(self):
 		return self.title
@@ -96,9 +108,13 @@ class Node:
 def getRoot():
 	root = Node("root", "/")
 	root.addChildren(getThemes())
+	root.addChildren([("Direkte", "direkte")])
 	root.updated = time.time()
 
 	return root
+
+def fixName(name):
+	return name.encode("utf8").strip().replace("/", "-")
 
 def request(url, split = None):
 	global config
@@ -117,7 +133,7 @@ def request(url, split = None):
 
 def getThemes():
 	ul = request("http://www1.nrk.no/nett-tv/").findAll(id="categories")[0]
-	return [(b["title"].encode("utf8").split("'")[1].strip(), b["href"]) for b in ul.findAll("a")]
+	return [(fixName(b["title"].split("'")[1]), b["href"]) for b in ul.findAll("a")]
 
 def getTheme(url):
 	ret = []
@@ -125,7 +141,7 @@ def getTheme(url):
 	for a in ul.findAll("li"):
 		if a.find("div"):
 			a = a.find("a")
-			ret.append((a["title"].split(" - ")[0].encode("utf8").strip(), a["href"]))
+			ret.append((fixName(a["title"].split(" - ")[0]), a["href"]))
 	return ret
 
 def getProject(url):
@@ -135,7 +151,7 @@ def getProject(url):
 	for a in ul.findAll("li"):
 		try:
 			el = a.find("a")
-			ret.append((el["title"].encode("utf8").strip(), el["href"]))
+			ret.append((fixName(el["title"]), el["href"]))
 		except:
 			pass
 	return ret
@@ -147,13 +163,12 @@ def getCategory(url):
 		ul = ul.find("ul", {"id": "folder" + url.split("/")[-1]})
 		for a in ul.findAll("a"):
 			if a.string != "&nbsp;":
-				ret.append((unicode(a.string).encode("UTF-8").strip(), a["href"]))
+				ret.append((fixName(unicode(a.string)), a["href"]))
 		return ret
 	except Exception, e:
 		return []
 
 def getCut(url):
-	print url
 	ul = request(url)
 	url = None
 	for p in ul.findAll("param"):
@@ -163,3 +178,12 @@ def getCut(url):
 	for p in request(url).findAll("ref"):
 		if p["href"][0:3] == "mms":
 			return p["href"]
+			
+def getDirect():
+	ret = []
+	ul = request("http://www.nrk.no/nett-tv/direkte/", "live-channels")
+	for p in ul.find("ul").findAll("li"):
+		p = p.find("h3").find("a")
+		if p:
+			ret.append((fixName(p["title"]), "http://www.nrk.no" + p["href"]))
+	return ret

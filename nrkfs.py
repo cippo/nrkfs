@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 try:
 	import fuse
@@ -86,7 +86,7 @@ class NrkFS(fuse.Fuse):
 		st.st_mtime = int(node.updated)
 		st.st_ctime = int(node.updated)
 
-		if node.isCut():
+		if node.isFile():
 			st.st_mode = stat.S_IFREG | 0444
 			st.st_nlink = 1
 			st.st_size = 1000
@@ -101,21 +101,24 @@ class NrkFS(fuse.Fuse):
 		children = getNode(path).getChildren().keys()
 		children.sort()
 		for r in [".", ".."] + children:
-			yield fuse.Direntry(str(r).replace("/", "-"))
+			yield fuse.Direntry(str(r))
 
 	def open(self, path, flags):
 		log("open", path, flags)
 
 		node = getNode(path)
-		if not node.isCut():
+		if not node.isFile():
 			return -errno.ENOENT
 
 	def read(self, path, size, offset):
 		log("read", path, offset)
 
 		node = getNode(path)
-		if not node.isCut():
+
+		if not node.isFile():
 			return -errno.ENOENT
+
+		#if node.isCut():
 
 		playlist = """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -127,6 +130,9 @@ class NrkFS(fuse.Fuse):
     <ref href="%s" />
   </entry>
 </asx>""" % (node.title, str(node.getCut()))
+
+		#elif node.isDirectTv():
+		#	playlist = node.title
 
 		playlist += " " * (1000 - len(playlist))
 
