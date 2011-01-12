@@ -117,7 +117,7 @@ def request(url, split = None):
 
 def getThemes():
 	ul = request("http://www1.nrk.no/nett-tv/").findAll(id="categories")[0]
-	return [(b["title"].encode("utf8").split("'")[1], b["href"]) for b in ul.findAll("a")]
+	return [(b["title"].encode("utf8").split("'")[1].strip(), b["href"]) for b in ul.findAll("a")]
 
 def getTheme(url):
 	ret = []
@@ -125,7 +125,7 @@ def getTheme(url):
 	for a in ul.findAll("li"):
 		if a.find("div"):
 			a = a.find("a")
-			ret.append((a["title"].split(" - ")[0].encode("utf8"), a["href"]))
+			ret.append((a["title"].split(" - ")[0].encode("utf8").strip(), a["href"]))
 	return ret
 
 def getProject(url):
@@ -135,7 +135,7 @@ def getProject(url):
 	for a in ul.findAll("li"):
 		try:
 			el = a.find("a")
-			ret.append((el["title"].encode("utf8"), el["href"]))
+			ret.append((el["title"].encode("utf8").strip(), el["href"]))
 		except:
 			pass
 	return ret
@@ -147,7 +147,7 @@ def getCategory(url):
 		ul = ul.find("ul", {"id": "folder" + url.split("/")[-1]})
 		for a in ul.findAll("a"):
 			if a.string != "&nbsp;":
-				ret.append((unicode(a.string).encode("UTF-8"), a["href"]))
+				ret.append((unicode(a.string).encode("UTF-8").strip(), a["href"]))
 		return ret
 	except Exception, e:
 		return []
