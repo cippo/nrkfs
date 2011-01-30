@@ -186,4 +186,5 @@ def getDirect():
 		p = p.find("h3").find("a")
 		if p:
 			ret.append((fixName(p["title"]), "http://www.nrk.no" + p["href"]))
+	# ul = request("http://nrk.no/tjenester/lyd/")
 	return ret

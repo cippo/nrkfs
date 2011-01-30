@@ -24,9 +24,9 @@ except ImportError:
 	print "Library 'nrk' not found."
 	exit()
 
-import os, sys
+import os, os.path, sys
 
-playlist = u"""<?xml version="1.0" encoding="UTF-8"?>
+playlist = """<?xml version="1.0" encoding="UTF-8"?>
 <asx version="3.0">
   <title>NRK Nett-TV</title>
   <author>NRK - Norsk Rikskringkasting</author>
@@ -41,15 +41,18 @@ def read(node, name):
 	if node.isFile():
 		if len(name) > 255:
 			name = name[0:250] + ".asx"
-		try:
+		if not os.path.exists(name) or os.path.getsize(name) == 0:
 			f = open(name, "w")
-			f.write(playlist % (node.title, str(node.getCut()).encode("utf8")))
+			try:
+				output = playlist % (node.title, str(node.getCut().encode("utf-8")))
+				f.write(output)
+			except Exception, e:
+				print name, e
 			f.close()
-		except Exception, e:
-			print e
 	else:
 		print name
-		os.mkdir(name)
+		if not os.path.exists(name):
+			os.mkdir(name)
 		children = node.getChildren()
 		for n in children:
 			read(children[n], name + "/" + n)
