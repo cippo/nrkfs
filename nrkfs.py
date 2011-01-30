@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NrkFS. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.3.3"
+__version__ = "0.4.0"
 
 try:
 	import fuse
@@ -35,13 +35,6 @@ import fuse, stat, errno, time, os, sys, getopt
 
 root = None
 config = {}
-logfile = None
-
-def log(*txt):
-	global logfile
-	if logfile != None:
-		logfile.write(" ".join([str(x) for x in txt]) + "\n")
-		logfile.flush()
 
 def getNode(path):
 	global root
@@ -69,8 +62,6 @@ class Stat(fuse.Stat):
 class NrkFS(fuse.Fuse):
 
 	def getattr(self, path):
-		log("getattr", path)
-
 		if path in ["/.Trash", "/.Trash-1000"]:
 			log("-", "No such file or directory")
 			return errno.ENOENT
@@ -78,7 +69,6 @@ class NrkFS(fuse.Fuse):
 		node = getNode(path)
 
 		if node == None:
-			log("-", "No such file or directory")
 			return -errno.ENOENT
 
 		st = Stat()
@@ -96,29 +86,21 @@ class NrkFS(fuse.Fuse):
 		return st
 
 	def readdir(self, path, offset):
-		log("readdir", path, offset)
-
 		children = getNode(path).getChildren().keys()
 		children.sort()
 		for r in [".", ".."] + children:
 			yield fuse.Direntry(str(r))
 
 	def open(self, path, flags):
-		log("open", path, flags)
-
 		node = getNode(path)
 		if not node.isFile():
 			return -errno.ENOENT
 
 	def read(self, path, size, offset):
-		log("read", path, offset)
-
 		node = getNode(path)
 
 		if not node.isFile():
 			return -errno.ENOENT
-
-		#if node.isCut():
 
 		playlist = """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -130,9 +112,6 @@ class NrkFS(fuse.Fuse):
     <ref href="%s" />
   </entry>
 </asx>""" % (node.title, str(node.getCut()))
-
-		#elif node.isDirectTv():
-		#	playlist = node.title
 
 		playlist += " " * (1000 - len(playlist))
 
@@ -147,20 +126,6 @@ class NrkFS(fuse.Fuse):
 		return buf
 
 def main():
-	#optlist, sys.argv = getopt.getopt(sys.argv, 'b:c:l:o:')
-
-	#for ok, ov in optlist:
-	#	if ok == "-o":
-	#		sys.argv.append(ok + ov)
-	#	elif ok[1:] in ["b", "c"]:
-	#		nrk.config[ok[1:]] = int(ov)
-	#	else:
-	#		config[ok[1:]] = ov
-
-	#if config.has_key("l"):
-	#	logfile = open(config["l"], "w")
-	#	log("Starting...")
-
 	server = NrkFS(version="%prog " + fuse.__version__,
 			usage=fuse.Fuse.fusage,
 			dash_s_do='setsingle')
