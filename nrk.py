@@ -64,6 +64,9 @@ class Node:
 				self.addChildren(getCategory(self.href))
 			elif self.isDirect():
 				self.addChildren(getDirect())
+			elif self.isRoot():
+				self.addChildren(getThemes())
+				self.addChildren([("Direkte", "direkte")])
 
 		return self.children
 	
@@ -94,6 +97,9 @@ class Node:
 		
 	def isDirectTv(self):
 		return self.href.count("direkte/") > 0
+
+	def isRoot(self):
+		return self.href == "/"
 	
 	def getCut(self):
 		if self.isFile():
@@ -107,10 +113,6 @@ class Node:
 		
 def getRoot():
 	root = Node("root", "/")
-	root.addChildren(getThemes())
-	root.addChildren([("Direkte", "direkte")])
-	root.updated = time.time()
-
 	return root
 
 def fixName(name):
